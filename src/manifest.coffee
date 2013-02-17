@@ -1,7 +1,7 @@
 fs = require 'fs'
 path = require 'path'
 url = require 'url'
-marked = require 'marked'
+marked = require 'multimarkdown'
 async = require 'async'
 _ = require 'underscore'
 
@@ -86,7 +86,7 @@ class ManifestFile
     # Private: Transforms markdown files to html, extracting
     # urls of relative image and adding anchor tags before all <h> tags
     render: ->
-        html = marked @raw
+        html = marked.convert @raw
 
         @assets = []
         imgs = html.match /<img[^>]*>/gi
@@ -100,7 +100,7 @@ class ManifestFile
                     new_img = img.replace src[2], url
                     html = html.replace img, new_img
 
-        hTags = html.match /<h([1-6])>.+<\/h\1>/gi
+        hTags = html.match /<h([1-6]).*>.+<\/h\1>/gi
         for hTag in hTags || []
             title = hTag.substring hTag.indexOf('>') + 1, hTag.lastIndexOf('<')
             anchor = generateSlug title
@@ -171,7 +171,7 @@ class Manifest
         currentLevel = 0
         for i, file of @files
             if @ignoreFirstFileForToc and i == '0' then continue
-            hTags = file.content.match /<h([1-6])>.+<\/h\1>/gi
+            hTags = file.content.match /<h([1-6]).*>.+<\/h\1>/gi
             for hTag in hTags || []
                 level = parseInt hTag.substr(2, 1)
                 title = cleanHtmlString hTag.substring hTag.indexOf('>') + 1, hTag.lastIndexOf('<')
